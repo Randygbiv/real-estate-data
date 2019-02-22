@@ -1,7 +1,10 @@
 #this file will contain the class that gets the request information
 import requests
-from bs4 import BeautifulSoup
 import json
+from Scraper import ScrapeHelp
+
+
+scrapHelp = ScrapeHelp.Scrapper()
 
 class Site:
 
@@ -13,10 +16,6 @@ class Site:
     content = []
     apiKey = "hCT4e2DiYyQhrfnBlM32tAay5KMoCAgmNsVMyi4cfxFIxIw0qcCjRllAK22EjrV1"
     
-    ##this is a test function
-    def hello(self):
-        print("Hello from Scrapper class")
-
     #this places all the zipcodes in an area and their cities in lists
     def getCodesAndCities(self, zipc, dist, units, frmat):
         a = requests.get("https://www.zipcodeapi.com/rest/" + self.apiKey
@@ -46,7 +45,6 @@ class Site:
                 if a.status_code == 200:
                     self.webContent.append(a.content)
 
-    
     #above function was getting to big so this will handle some things
     def changeTwoToOne(self, value):
         a = value.split()
@@ -57,3 +55,7 @@ class Site:
             return value
 
     #now to parse through the data and use it with bs4
+    def scrapeIt(self):
+        for each in self.webContent:
+            print(" ")
+            scrapHelp.parseData(each)

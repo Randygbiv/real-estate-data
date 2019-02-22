@@ -13,3 +13,9 @@ class typesHelper:
             return False
         else:
             return True
+
+    def tryParseInt(self, value):
+        try:
+            return int(value)
+        except ValueError:
+            return False
