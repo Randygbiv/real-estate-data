@@ -57,5 +57,4 @@ class Site:
     #now to parse through the data and use it with bs4
     def scrapeIt(self):
         for each in self.webContent:
-            print(" ")
             scrapHelp.parseData(each)

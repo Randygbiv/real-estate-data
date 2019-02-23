@@ -1,8 +1,10 @@
 #this is the class that will handle parsing the data
 from bs4 import BeautifulSoup
 from Helpers import typeHelper
+from Storage import MongoActions
 
 typeHelp = typeHelper.typesHelper()
+mongoHelp = MongoActions.mongoHelper()
 
 class Scrapper:
 
@@ -24,26 +26,7 @@ class Scrapper:
             zipCode = list.find("h5", itemprop="address")
             room = list.find("span", itemprop="numberOfRooms") #needs to be int
             self.dataHelper(link, size, price, zipCode, room)
-            
-    #this will add to the floor list
-    def checkNone(self, elm, typeOfTag):
-        if elm == None:
-            return 'None'
-        else:
-            if typeOfTag == "none":
-                return elm.text
-            else:
-                return elm[typeOfTag]
-    
-    #Mutates the type of element so that it can be parsed correctly.
-    def mutateType(self, elm, typeOfData):
-        if elm == "None":
-            return elm
-        else:
-            if typeOfData == 'int':
-                return int(elm)
-            else:
-                return str(elm)
+        self.packStorage()
 
     #this will help with mutating zipcodes to the proper format
     def stripZip(self, elm):
@@ -57,11 +40,11 @@ class Scrapper:
 
     #this gets called by the function parseData
     def dataHelper(self, link, size, price, zipCode, room):
-        self.links.append(link)
-        a = self.mutateType(self.checkNone(size, "content"), "int")
-        b = self.mutateType(self.checkNone(price, "content"), "int")
+        self.links.append(link['href'])
+        a = typeHelp.mutateType(typeHelp.checkNone(size, "content"), "int")
+        b = typeHelp.mutateType(typeHelp.checkNone(price, "content"), "int")
         c = self.stripZip(zipCode.text)
-        d = self.mutateType(self.checkNone(room, "none"), "int")
+        d = typeHelp.mutateType(typeHelp.checkNone(room, "none"), "int")
         self.floorSizes.append(a)
         self.cost.append(b)
         self.zipCodes.append(c)
@@ -75,5 +58,15 @@ class Scrapper:
         self.rooms = []
         self.links = []
         self.floorSizes = []
+    
     #this will take each part of the arrays to an object and send it to the database
-    #def packStorage(self):
+    def packStorage(self):
+        for idx, zipC in enumerate(self.zipCodes):
+            listing = {
+                "zipcode": self.zipCodes[idx],
+                "link": self.links[idx],
+                "size": self.floorSizes[idx],
+                "price": self.cost[idx],
+                "rooms": self.rooms[idx]
+            }
+            mongoHelp.addListing(listing)
