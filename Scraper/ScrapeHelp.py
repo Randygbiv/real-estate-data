@@ -62,11 +62,26 @@ class Scrapper:
     #this will take each part of the arrays to an object and send it to the database
     def packStorage(self):
         for idx, zipC in enumerate(self.zipCodes):
+            floorStandin = 300
+            roomStandin = 1
+            if self.floorSizes[idx] != "None":
+                floorStandin = self.floorSizes[idx]
+            if self.rooms[idx] != "None":
+                roomStandin = self.rooms[idx]
             listing = {
                 "zipcode": self.zipCodes[idx],
                 "link": self.links[idx],
                 "size": self.floorSizes[idx],
                 "price": self.cost[idx],
-                "rooms": self.rooms[idx]
+                "rooms": self.rooms[idx],
+                "pricePerSqFt": round((self.cost[idx] / floorStandin), 2),
+                "pricePerRoom": round((self.cost[idx] / roomStandin), 2)
             }
+            self.sendToStorage(listing)
+
+    #this sends the packed listing to the database after checking the count
+    def sendToStorage(self, listing):
+        a = mongoHelp.getCount("size", listing["size"], "price", listing["price"], 
+            "rooms", listing["rooms"], "zipcode", listing["zipcode"])
+        if a <= 0:
             mongoHelp.addListing(listing)
